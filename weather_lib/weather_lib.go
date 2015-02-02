@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"math"
 	"net/http"
+	"net/url"
 )
 
 func QueryOpenweathermap(city string) (weatherData, error) {
@@ -27,7 +28,15 @@ func QueryOpenweathermap(city string) (weatherData, error) {
 }
 
 func QueryYahooWeather(city string) (yahooData, error) {
-	resp, err := http.Get("https://query.yahooapis.com/v1/public/yql?q=select location.city, item.lat, item.long, item.condition.temp from weather.forecast where woeid in (select woeid from geo.places(1) where text='" + city + "')&format=json&appid=yIIX1S4o")
+
+	u, err := url.Parse("https://query.yahooapis.com/v1/public/yql")
+	q := u.Query()
+	q.Set("q", "select location.city, item.lat, item.long, item.condition.temp from weather.forecast where woeid in (select woeid from geo.places(1) where text='"+city+"') and u='c'")
+	q.Set("format", "json")
+	q.Set("appid", "yIIX1S4o")
+	u.RawQuery = q.Encode()
+
+	resp, err := http.Get(u.String())
 
 	if err != nil {
 		return yahooData{}, err

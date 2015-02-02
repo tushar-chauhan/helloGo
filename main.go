@@ -25,7 +25,7 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 func getForecast(w http.ResponseWriter, r *http.Request) {
 	service := strings.SplitN(r.URL.Path, "/", 4)[2]
 	city := strings.SplitN(r.URL.Path, "/", 4)[3]
-	log.Println("Service is %s and city is %s", service, city)
+	log.Println("Service is " + service + " and city is " + city)
 	switch service {
 	case "yahoo":
 		data, _ := weather_lib.QueryYahooWeather(city)

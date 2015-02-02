@@ -2,7 +2,6 @@ package weather_lib
 
 import (
 	"encoding/json"
-	"log"
 	"math"
 	"net/http"
 )
@@ -24,13 +23,11 @@ func QueryOpenweathermap(city string) (weatherData, error) {
 		data.Main.Kelvin = roundFloat((data.Main.Kelvin - 273.15), .5, 2)
 		data.Message = "success"
 	}
-
-	log.Println("Returning data..")
 	return data, nil
 }
 
 func QueryYahooWeather(city string) (yahooData, error) {
-	resp, err := http.Get("https://query.yahooapis.com/v1/public/yql?q=select location.city, item.lat, item.long, item.condition.temp from weather.forecast where woeid in (select woeid from geo.places(1) where text='" + city + "')&format=json")
+	resp, err := http.Get("https://query.yahooapis.com/v1/public/yql?q=select location.city, item.lat, item.long, item.condition.temp from weather.forecast where woeid in (select woeid from geo.places(1) where text='" + city + "')&format=json&appid=yIIX1S4o")
 
 	if err != nil {
 		return yahooData{}, err
@@ -43,7 +40,6 @@ func QueryYahooWeather(city string) (yahooData, error) {
 		return yahooData{}, err
 	}
 
-	log.Println("Returning Yahoo data")
 	return data, nil
 }
 

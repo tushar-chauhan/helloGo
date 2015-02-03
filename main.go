@@ -2,18 +2,20 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"github.com/tushar-chauhan/helloGo/weather_lib"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 )
 
 func main() {
-	http.HandleFunc("/", sayHello)
+	router := mux.NewRouter()
+	router.HandleFunc("/", sayHello)
 
-	http.HandleFunc("/forecast/", getForecast)
-
+	router.HandleFunc("/forecast/{service}/{city}", getForecast)
+	http.Handle("/", router)
+	log.Println("Server listening on port " + os.Getenv("PORT"))
 	http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 }
 
@@ -23,9 +25,11 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 }
 
 func getForecast(w http.ResponseWriter, r *http.Request) {
-	service := strings.SplitN(r.URL.Path, "/", 4)[2]
-	city := strings.SplitN(r.URL.Path, "/", 4)[3]
+	vars := mux.Vars(r)
+	service := vars["service"]
+	city := vars["city"]
 	log.Println("Received request for Service: " + service + " and City: " + city)
+
 	switch service {
 	case "yahoo":
 		data, err := weather_lib.QueryYahooWeather(city)

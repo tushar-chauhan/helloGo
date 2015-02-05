@@ -1,4 +1,4 @@
-package weather_lib
+package weatherutil
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"net/url"
 )
 
+// Method to make API call to Openweathermap
 func QueryOpenweathermap(city string) (weatherData, error) {
 	resp, err := http.Get("http://api.openweathermap.org/data/2.5/weather?q=" + city)
 	if err != nil {
@@ -27,6 +28,7 @@ func QueryOpenweathermap(city string) (weatherData, error) {
 	return data, nil
 }
 
+//Method to make call to Yahoo Weather API using YQL
 func QueryYahooWeather(city string) (yahooData, error) {
 
 	u, err := url.Parse("https://query.yahooapis.com/v1/public/yql")
@@ -52,6 +54,7 @@ func QueryYahooWeather(city string) (yahooData, error) {
 	return data, nil
 }
 
+// Function to round of the floating point values
 func roundFloat(val float64, roundOn float64, places int) (newVal float64) {
 	var round float64
 	pow := math.Pow(10, float64(places))
@@ -68,6 +71,7 @@ func roundFloat(val float64, roundOn float64, places int) (newVal float64) {
 	return
 }
 
+// Struct to store the required Openweathermap JSON response
 type weatherData struct {
 	Name  string `json:"name"`
 	Coord struct {
@@ -80,6 +84,7 @@ type weatherData struct {
 	Message string `json:"message"`
 }
 
+// Struct to store the required Yahoo Weather YQL JSON response
 type yahooData struct {
 	Query struct {
 		Result struct {

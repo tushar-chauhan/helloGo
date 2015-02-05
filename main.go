@@ -3,10 +3,11 @@ package main
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/tushar-chauhan/helloGo/weather_lib"
+	"github.com/tushar-chauhan/helloGo/weatherutil"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -14,6 +15,7 @@ func main() {
 	router.HandleFunc("/", sayHello)
 
 	router.HandleFunc("/forecast/{service}/{city}", getForecast)
+	router.HandleFunc("/weather/{cities}", getForecast)
 	http.Handle("/", router)
 	log.Println("Server listening on port " + os.Getenv("PORT"))
 	http.ListenAndServe(":"+os.Getenv("PORT"), nil)
@@ -28,21 +30,31 @@ func getForecast(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	service := vars["service"]
 	city := vars["city"]
-	log.Println("Received request for Service: " + service + " and City: " + city)
+	var cities []string = strings.Split(vars["cities"], ",")
 
-	switch service {
-	case "yahoo":
-		data, err := weather_lib.QueryYahooWeather(city)
-		PanicErr(w, err)
+	if service != "" {
+		log.Printf("Received single request for Service: '%s' and City: '%s'", service, city)
+		switch service {
+		case "yahoo":
+			data, err := weatherutil.QueryYahooWeather(city)
+			PanicErr(w, err)
+			w.Header().Set("Content-Type", "application/json, charset=utf-8")
+			json.NewEncoder(w).Encode(data)
+		case "open":
+			data, err := weatherutil.QueryOpenweathermap(city)
+			PanicErr(w, err)
+			w.Header().Set("Content-Type", "application/json, charset=utf-8")
+			json.NewEncoder(w).Encode(data)
+		default:
+			log.Println("Default:", "No weather Service opted..")
+		}
+	}
+
+	if cities != nil && service == "" {
+		log.Printf("Received single request for Multiple cities: %s", vars["cities"])
+		structSlice := weatherutil.ProcessCities(cities)
 		w.Header().Set("Content-Type", "application/json, charset=utf-8")
-		json.NewEncoder(w).Encode(data)
-	case "open":
-		data, err := weather_lib.QueryOpenweathermap(city)
-		PanicErr(w, err)
-		w.Header().Set("Content-Type", "application/json, charset=utf-8")
-		json.NewEncoder(w).Encode(data)
-	default:
-		log.Println("Default:", "No weather Service opted..")
+		json.NewEncoder(w).Encode(structSlice)
 	}
 
 }
